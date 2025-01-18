@@ -16,27 +16,26 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: '23.x'
         cache: 'yarn'
 
-    - name: Install Heroku CLI
-      run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-
-    - name: Log in to Heroku
+    - name: Login to Heroku Container Registry
       env:
         HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: |
-        echo "$HEROKU_API_KEY" | heroku auth:token > ~/.netrc
+      run: heroku container:login
 
     - name: Install dependencies
-      run: yarn install
+      run: yarn install --frozen-lockfile
 
     - name: Build the app
       run: yarn build
+      env:
+        CI: true
 
     - name: Deploy to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       run: |
-        heroku container:login
+        git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/myviteapp.git || true
         heroku container:push web --app myviteapp
         heroku container:release web --app myviteapp
