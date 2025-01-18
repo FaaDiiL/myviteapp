@@ -10,32 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Check out the repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'yarn'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
 
-    - name: Login to Heroku Container Registry
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: heroku container:login
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      - name: Build the app
+        run: yarn build
+        env:
+          CI: true
 
-    - name: Build the app
-      run: yarn build
-      env:
-        CI: true
-
-    - name: Deploy to Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: |
-        git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/myviteapp.git || true
-        heroku container:push web --app myviteapp
-        heroku container:release web --app myviteapp
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "myviteapp"  # Byt ut mot din faktiska Heroku-app
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          branch: dev
