@@ -7,5 +7,6 @@ export default defineConfig({
   base: '/kapclear-fadil/',
   build: {
     outDir: 'dist', // Default output directory.
+    emptyOutDir: true,
   },
 });
